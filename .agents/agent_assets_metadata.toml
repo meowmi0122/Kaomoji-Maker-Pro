@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "89MD0LvCXGnNss-WFW-Mp"
+uri = "file://artifacts/kaomoji-maker/public/apple-touch-icon.png"
+type = "image"
+title = "kaomoji app icon"
