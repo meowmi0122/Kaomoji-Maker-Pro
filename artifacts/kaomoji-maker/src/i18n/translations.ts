@@ -23,6 +23,7 @@ export type Translations = {
   mouthNose: string;
   armsDecor: string;
   eyeSpacing: string;
+  eyeLayout: string;
 };
 
 export const TRANSLATIONS: Record<Language, Translations> = {
@@ -49,6 +50,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     mouthNose: "嘴巴/鼻子",
     armsDecor: "手臂/裝飾",
     eyeSpacing: "眼距",
+    eyeLayout: "眼睛位置",
   },
   "zh-CN": {
     appTitle: "颜文字制作器",
@@ -73,6 +75,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     mouthNose: "嘴巴/鼻子",
     armsDecor: "手臂/装饰",
     eyeSpacing: "眼距",
+    eyeLayout: "眼睛位置",
   },
   "en": {
     appTitle: "Kaomoji Maker",
@@ -97,6 +100,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     mouthNose: "Mouth/Nose",
     armsDecor: "Arms/Decor",
     eyeSpacing: "Eye Spacing",
+    eyeLayout: "Eye Position",
   },
 };
 

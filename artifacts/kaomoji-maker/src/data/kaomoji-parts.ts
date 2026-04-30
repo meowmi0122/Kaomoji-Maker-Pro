@@ -402,28 +402,45 @@ export const KAOMOJI_CATEGORIES: KaomojiCategory[] = [
 ];
 
 export type EyeSpacing = 0 | 1 | 2 | 3;
+export type EyeLayout = "normal" | "split" | "reverse";
 
 export type Selection = {
   baseIndex: number;
   eyesIndex: number;
   eyeSpacing: EyeSpacing;
+  eyeLayout: EyeLayout;
   mouthIndex: number;
   armsIndex: number;
   accessoryIndex: number;
 };
-
-export const EYE_SPACING_OPTIONS: { label: string; spacing: EyeSpacing; preview: string }[] = [
-  { label: "貼近", spacing: 0, preview: "••" },
-  { label: "正常", spacing: 1, preview: "• •" },
-  { label: "寬", spacing: 2, preview: "•  •" },
-  { label: "超寬", spacing: 3, preview: "•   •" },
-];
 
 export const EYE_SPACING_LABELS: Record<string, string[]> = {
   "zh-TW": ["貼近", "正常", "寬", "超寬"],
   "zh-CN": ["紧密", "正常", "宽", "超宽"],
   "en": ["Close", "Normal", "Wide", "Wider"],
 };
+
+export const EYE_LAYOUT_OPTIONS: { layout: EyeLayout; preview: string }[] = [
+  { layout: "normal",  preview: "•• ω" },
+  { layout: "split",   preview: "• ω •" },
+  { layout: "reverse", preview: "ω ••" },
+];
+
+export const EYE_LAYOUT_LABELS: Record<string, string[]> = {
+  "zh-TW": ["左", "兩側", "右"],
+  "zh-CN": ["左", "两侧", "右"],
+  "en":    ["Left", "Split", "Right"],
+};
+
+function splitEyes(eyeVal: string): [string, string] {
+  if (!eyeVal.trim()) return ["  ", "  "];
+  const spaceIdx = eyeVal.indexOf(" ");
+  if (spaceIdx === -1) {
+    const mid = Math.ceil(eyeVal.length / 2);
+    return [eyeVal.slice(0, mid), eyeVal.slice(mid)];
+  }
+  return [eyeVal.slice(0, spaceIdx), eyeVal.slice(spaceIdx + 1)];
+}
 
 function applyEyeSpacing(eyeVal: string, spacing: EyeSpacing): string {
   if (!eyeVal.trim()) return eyeVal;
@@ -435,6 +452,49 @@ function applyEyeSpacing(eyeVal: string, spacing: EyeSpacing): string {
   return `${left}${gap}${right}`;
 }
 
+function buildFaceContent(eyeVal: string, mouthVal: string, layout: EyeLayout, spacing: EyeSpacing): string {
+  const gap = " ".repeat(spacing + 1);
+  if (layout === "split") {
+    const [L, R] = splitEyes(eyeVal);
+    if (!L.trim() && !R.trim()) return mouthVal || "  ";
+    if (!mouthVal) return `${L}${gap}${R}`;
+    return `${L}${gap}${mouthVal}${gap}${R}`;
+  }
+  if (layout === "reverse") {
+    const spaced = applyEyeSpacing(eyeVal, spacing);
+    if (!mouthVal) return spaced;
+    if (!spaced.trim()) return mouthVal;
+    return `${mouthVal} ${spaced}`;
+  }
+  // normal
+  const spaced = applyEyeSpacing(eyeVal, spacing);
+  if (!spaced.trim() && !mouthVal) return "  ";
+  if (!spaced.trim()) return mouthVal;
+  if (!mouthVal) return spaced;
+  return `${spaced} ${mouthVal}`;
+}
+
+function buildFaceString(baseTemplate: string, eyeVal: string, mouthVal: string, layout: EyeLayout, spacing: EyeSpacing): string {
+  if (!baseTemplate || !baseTemplate.includes("{eyes}")) {
+    return buildFaceContent(eyeVal, mouthVal, layout, spacing);
+  }
+
+  if (layout === "split") {
+    const [L, R] = splitEyes(eyeVal);
+    const gap = " ".repeat(spacing + 1);
+    const mCenter = mouthVal ? `${gap}${mouthVal}${gap}` : gap;
+    return baseTemplate.replace("{eyes}", L + mCenter + R).replace(" {mouth}", "").replace("{mouth}", "");
+  }
+  if (layout === "reverse") {
+    const spaced = applyEyeSpacing(eyeVal, spacing);
+    const mPart = mouthVal ? `${mouthVal} ` : "";
+    return baseTemplate.replace("{eyes}", mPart + spaced).replace(" {mouth}", "").replace("{mouth}", "");
+  }
+  // normal
+  const spaced = applyEyeSpacing(eyeVal, spacing);
+  return baseTemplate.replace("{eyes}", spaced).replace("{mouth}", mouthVal);
+}
+
 export function buildKaomoji(selection: Selection): string {
   const base = KAOMOJI_CATEGORIES[0].parts[selection.baseIndex];
   const eyes = KAOMOJI_CATEGORIES[1].parts[selection.eyesIndex];
@@ -442,49 +502,33 @@ export function buildKaomoji(selection: Selection): string {
   const arms = KAOMOJI_CATEGORIES[3].parts[selection.armsIndex];
   const accessory = KAOMOJI_CATEGORIES[4].parts[selection.accessoryIndex];
 
-  const rawEyeVal = eyes.value;
-  const eyeVal = applyEyeSpacing(rawEyeVal, selection.eyeSpacing);
+  const eyeVal = eyes.value;
   const mouthVal = mouth.value;
+  const layout = selection.eyeLayout;
+  const spacing = selection.eyeSpacing;
 
-  let faceContent = "";
-  if (eyeVal.trim() && mouthVal) {
-    faceContent = `${eyeVal} ${mouthVal}`;
-  } else if (eyeVal.trim()) {
-    faceContent = eyeVal;
-  } else if (mouthVal) {
-    faceContent = mouthVal;
-  } else {
-    faceContent = "  ";
-  }
-
-  let result = "";
   const armsVal = arms.value;
+  let result = "";
 
   if (armsVal && armsVal.includes("{body}")) {
-    let face = base.value;
-    if (!face || !face.includes("{eyes}")) {
-      face = `( {eyes} {mouth} )`;
-    }
-    face = face.replace("{eyes}", eyeVal || "  ").replace("{mouth}", mouthVal || "");
+    const bodyTemplate = base.value && base.value.includes("{eyes}") ? base.value : "( {eyes} {mouth} )";
+    const face = buildFaceString(bodyTemplate, eyeVal, mouthVal, layout, spacing);
     result = armsVal.replace("{body}", face);
   } else {
-    let face = base.value;
-    if (!face) {
-      result = `${faceContent}${armsVal}${accessory.value}`;
-    } else {
-      face = face.replace("{eyes}", eyeVal || "  ").replace("{mouth}", mouthVal || "");
-      result = `${face}${armsVal}${accessory.value}`;
-    }
+    const face = buildFaceString(base.value, eyeVal, mouthVal, layout, spacing);
+    result = `${face}${armsVal}${accessory.value}`;
   }
 
   return result.trim() || "(^ ^)";
 }
 
 export function randomSelection(): Selection {
+  const layouts: EyeLayout[] = ["normal", "split", "reverse"];
   return {
     baseIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[0].parts.length),
     eyesIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[1].parts.length),
     eyeSpacing: (Math.floor(Math.random() * 3)) as EyeSpacing,
+    eyeLayout: layouts[Math.floor(Math.random() * layouts.length)],
     mouthIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[2].parts.length),
     armsIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[3].parts.length),
     accessoryIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[4].parts.length),
@@ -495,6 +539,7 @@ export const DEFAULT_SELECTION: Selection = {
   baseIndex: 1,
   eyesIndex: 3,
   eyeSpacing: 1,
+  eyeLayout: "normal",
   mouthIndex: 3,
   armsIndex: 4,
   accessoryIndex: 0,
