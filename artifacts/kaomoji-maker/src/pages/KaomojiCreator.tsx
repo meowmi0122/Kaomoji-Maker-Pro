@@ -5,11 +5,9 @@ import {
   buildKaomoji,
   randomSelection,
   DEFAULT_SELECTION,
-  EYE_SPACING_LABELS,
   EYE_LAYOUT_OPTIONS,
   EYE_LAYOUT_LABELS,
   type Selection,
-  type EyeSpacing,
   type EyeLayout,
 } from "@/data/kaomoji-parts";
 import { PRESETS, PRESET_CATEGORIES, CATEGORY_LABELS } from "@/data/presets";
@@ -195,46 +193,23 @@ export default function KaomojiCreator() {
                     }}
                   />
                   {cat.id === "eyes" && (
-                    <div className="mb-4 space-y-3">
-                      <div>
-                        <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">{t.eyeLayout}</div>
-                        <div className="flex gap-2">
-                          {EYE_LAYOUT_OPTIONS.map((opt, i) => (
-                            <button
-                              key={opt.layout}
-                              onClick={() => setSelection((prev) => ({ ...prev, eyeLayout: opt.layout as EyeLayout }))}
-                              className={`flex-1 h-11 rounded-lg border transition-all duration-150 flex flex-col items-center justify-center gap-0.5
-                                ${selection.eyeLayout === opt.layout
-                                  ? "bg-blue-600 text-white border-blue-700 shadow-md"
-                                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:bg-blue-50"
-                                }`}
-                            >
-                              <span className="font-mono text-xs leading-none">{opt.preview}</span>
-                              <span className="text-[10px] leading-none mt-0.5 opacity-80">{EYE_LAYOUT_LABELS[lang][i]}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">{t.eyeSpacing}</div>
-                        <div className="flex gap-2">
-                          {EYE_SPACING_LABELS[lang].map((label, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setSelection((prev) => ({ ...prev, eyeSpacing: i as EyeSpacing }))}
-                              className={`flex-1 h-10 rounded-lg border transition-all duration-150 flex flex-col items-center justify-center gap-0.5
-                                ${selection.eyeSpacing === i
-                                  ? "bg-blue-600 text-white border-blue-700 shadow-md"
-                                  : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:bg-blue-50"
-                                }`}
-                            >
-                              <span className="font-mono text-xs leading-none">
-                                {i === 0 ? "••" : i === 1 ? "• •" : i === 2 ? "•  •" : "•   •"}
-                              </span>
-                              <span className="text-[10px] leading-none mt-0.5 opacity-80">{label}</span>
-                            </button>
-                          ))}
-                        </div>
+                    <div className="mb-4">
+                      <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">{t.eyeLayout}</div>
+                      <div className="flex gap-2">
+                        {EYE_LAYOUT_OPTIONS.map((opt, i) => (
+                          <button
+                            key={opt.layout}
+                            onClick={() => setSelection((prev) => ({ ...prev, eyeLayout: opt.layout as EyeLayout }))}
+                            className={`flex-1 h-11 rounded-lg border transition-all duration-150 flex flex-col items-center justify-center gap-0.5
+                              ${selection.eyeLayout === opt.layout
+                                ? "bg-blue-600 text-white border-blue-700 shadow-md"
+                                : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:bg-blue-50"
+                              }`}
+                          >
+                            <span className="font-mono text-xs leading-none">{opt.preview}</span>
+                            <span className="text-[10px] leading-none mt-0.5 opacity-80">{EYE_LAYOUT_LABELS[lang][i]}</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}
