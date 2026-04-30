@@ -5,7 +5,9 @@ import {
   buildKaomoji,
   randomSelection,
   DEFAULT_SELECTION,
+  EYE_SPACING_LABELS,
   type Selection,
+  type EyeSpacing,
 } from "@/data/kaomoji-parts";
 import { PRESETS, PRESET_CATEGORIES, CATEGORY_LABELS } from "@/data/presets";
 import { TRANSLATIONS, LANGUAGE_NAMES, type Language } from "@/i18n/translations";
@@ -161,34 +163,58 @@ export default function KaomojiCreator() {
           {activeTab === "creator" && (
             <div className="px-4 pt-4 pb-2">
               {KAOMOJI_CATEGORIES.map((cat, catIdx) => (
-                <PartSelector
-                  key={cat.id}
-                  label={
-                    cat.id === "base" ? t.base :
-                    cat.id === "eyes" ? t.eyes :
-                    cat.id === "mouth" ? t.mouthNose :
-                    cat.id === "arms" ? t.arms :
-                    t.accessory
-                  }
-                  parts={cat.parts}
-                  selectedIndex={
-                    catIdx === 0 ? selection.baseIndex :
-                    catIdx === 1 ? selection.eyesIndex :
-                    catIdx === 2 ? selection.mouthIndex :
-                    catIdx === 3 ? selection.armsIndex :
-                    selection.accessoryIndex
-                  }
-                  onSelect={(i) => {
-                    setSelection((prev) => ({
-                      ...prev,
-                      ...(catIdx === 0 ? { baseIndex: i } :
-                         catIdx === 1 ? { eyesIndex: i } :
-                         catIdx === 2 ? { mouthIndex: i } :
-                         catIdx === 3 ? { armsIndex: i } :
-                         { accessoryIndex: i }),
-                    }));
-                  }}
-                />
+                <div key={cat.id}>
+                  <PartSelector
+                    label={
+                      cat.id === "base" ? t.base :
+                      cat.id === "eyes" ? t.eyes :
+                      cat.id === "mouth" ? t.mouthNose :
+                      cat.id === "arms" ? t.arms :
+                      t.accessory
+                    }
+                    parts={cat.parts}
+                    selectedIndex={
+                      catIdx === 0 ? selection.baseIndex :
+                      catIdx === 1 ? selection.eyesIndex :
+                      catIdx === 2 ? selection.mouthIndex :
+                      catIdx === 3 ? selection.armsIndex :
+                      selection.accessoryIndex
+                    }
+                    onSelect={(i) => {
+                      setSelection((prev) => ({
+                        ...prev,
+                        ...(catIdx === 0 ? { baseIndex: i } :
+                           catIdx === 1 ? { eyesIndex: i } :
+                           catIdx === 2 ? { mouthIndex: i } :
+                           catIdx === 3 ? { armsIndex: i } :
+                           { accessoryIndex: i }),
+                      }));
+                    }}
+                  />
+                  {cat.id === "eyes" && (
+                    <div className="mb-4">
+                      <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">{t.eyeSpacing}</div>
+                      <div className="flex gap-2">
+                        {EYE_SPACING_LABELS[lang].map((label, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setSelection((prev) => ({ ...prev, eyeSpacing: i as EyeSpacing }))}
+                            className={`flex-1 h-10 rounded-lg text-sm font-semibold border transition-all duration-150 flex flex-col items-center justify-center gap-0.5
+                              ${selection.eyeSpacing === i
+                                ? "bg-blue-600 text-white border-blue-700 shadow-md"
+                                : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:bg-blue-50"
+                              }`}
+                          >
+                            <span className="font-mono text-xs leading-none">
+                              {i === 0 ? "••" : i === 1 ? "• •" : i === 2 ? "•  •" : "•   •"}
+                            </span>
+                            <span className="text-[10px] leading-none mt-0.5 opacity-80">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

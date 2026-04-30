@@ -401,13 +401,39 @@ export const KAOMOJI_CATEGORIES: KaomojiCategory[] = [
   },
 ];
 
+export type EyeSpacing = 0 | 1 | 2 | 3;
+
 export type Selection = {
   baseIndex: number;
   eyesIndex: number;
+  eyeSpacing: EyeSpacing;
   mouthIndex: number;
   armsIndex: number;
   accessoryIndex: number;
 };
+
+export const EYE_SPACING_OPTIONS: { label: string; spacing: EyeSpacing; preview: string }[] = [
+  { label: "貼近", spacing: 0, preview: "••" },
+  { label: "正常", spacing: 1, preview: "• •" },
+  { label: "寬", spacing: 2, preview: "•  •" },
+  { label: "超寬", spacing: 3, preview: "•   •" },
+];
+
+export const EYE_SPACING_LABELS: Record<string, string[]> = {
+  "zh-TW": ["貼近", "正常", "寬", "超寬"],
+  "zh-CN": ["紧密", "正常", "宽", "超宽"],
+  "en": ["Close", "Normal", "Wide", "Wider"],
+};
+
+function applyEyeSpacing(eyeVal: string, spacing: EyeSpacing): string {
+  if (!eyeVal.trim()) return eyeVal;
+  const spaceIdx = eyeVal.indexOf(" ");
+  if (spaceIdx === -1) return eyeVal;
+  const left = eyeVal.slice(0, spaceIdx);
+  const right = eyeVal.slice(spaceIdx + 1);
+  const gap = " ".repeat(spacing + 1);
+  return `${left}${gap}${right}`;
+}
 
 export function buildKaomoji(selection: Selection): string {
   const base = KAOMOJI_CATEGORIES[0].parts[selection.baseIndex];
@@ -416,7 +442,8 @@ export function buildKaomoji(selection: Selection): string {
   const arms = KAOMOJI_CATEGORIES[3].parts[selection.armsIndex];
   const accessory = KAOMOJI_CATEGORIES[4].parts[selection.accessoryIndex];
 
-  const eyeVal = eyes.value;
+  const rawEyeVal = eyes.value;
+  const eyeVal = applyEyeSpacing(rawEyeVal, selection.eyeSpacing);
   const mouthVal = mouth.value;
 
   let faceContent = "";
@@ -457,6 +484,7 @@ export function randomSelection(): Selection {
   return {
     baseIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[0].parts.length),
     eyesIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[1].parts.length),
+    eyeSpacing: (Math.floor(Math.random() * 3)) as EyeSpacing,
     mouthIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[2].parts.length),
     armsIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[3].parts.length),
     accessoryIndex: Math.floor(Math.random() * KAOMOJI_CATEGORIES[4].parts.length),
@@ -466,6 +494,7 @@ export function randomSelection(): Selection {
 export const DEFAULT_SELECTION: Selection = {
   baseIndex: 1,
   eyesIndex: 3,
+  eyeSpacing: 1,
   mouthIndex: 3,
   armsIndex: 4,
   accessoryIndex: 0,
